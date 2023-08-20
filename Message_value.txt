@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: MIT
+ pragma solidity ^0.8.5;
+
+  contract Message {
+      string message; //we declared  global variable
+  function insertmessage (string memory _message) public {
+       message= _message;
+  } // we created a function to write a message
+  function getmessage ()public view returns(string memory _message) {
+   return message; // this function return  the value of we stored in message
+  }
+  }
