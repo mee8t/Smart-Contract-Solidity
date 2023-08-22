@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.5;
+ contract Banking {
+     address payable clint;
+     bool _switch = true;
+
+     // special type of function only run once at time of deploying 
+      constructor (){
+          clint = payable(msg.sender);
+      }
+         
+       modifier Onlyowner (){
+           require(clint == msg.sender);
+           _; // go to the next line 
+       }
+
+     // deposit  ether in smart contract
+     // payable do all the arithmetic opration deduct the ether from msg.sender and aad into smart contract
+      function deposit_ether() payable public {
+
+      }
+      // get_ether function return the value of smart contract holding ether's
+      function get_ether() public view returns (uint){
+          return address(this).balance;
+      }
+
+      // withdraw ether from smart contract 
+       function withdraw (uint _amount) public Onlyowner {
+          if ( clint.send(_amount)) {
+              _switch = true;
+          }
+          else _switch =false ;
+       }
+          // function to transfer ether from smart contract to another address
+          function transfer_ether (address payable _address, uint _amount) public  Onlyowner {
+             _address.send(_amount);
+          }
+            //returns the address of smart contract Owner 
+            function getOwner () public view returns (address payable){
+            return clint;}
+ }
