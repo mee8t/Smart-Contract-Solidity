@@ -1,0 +1,153 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+ 
+ contract SupplyChain {
+// the platform struct represents platform propertirs,including,laptop Id,brand name,manufacturers Id,distributorId,retailer Id and customer Id.
+     struct Platform {
+         uint laptopId;
+         string brandName;
+         uint manufacturersId;
+         uint distributorId;
+         uint  retailerId;
+         uint costumerId;
+     }
+
+ //The brand struct represents a laptop's properties, including its Model_No ,Name,memory specificationand Opreating system.
+      struct brand {
+           uint Model_No;
+           string name;
+           string Memory;
+           string opratingsystem;
+}
+
+//The manufacturer struct represents manufacturer details including name, manufacturer Id and address.
+    struct manufacturers {
+      string name;
+      uint M_id ;
+      string Address;
+}
+    
+//The distributor struct represents distributor details including name,distributor Id and address.
+   struct distributor {
+      string name;
+      uint D_id ;
+      string Address;
+      }
+
+ //The retailer struct represents retailer details including name,retailer Id and address.
+   struct retailer {
+      string name;
+      uint R_id ;
+      string Address;
+      }
+ //The customer struct represents customer details including name,customer Id and address.
+     struct customer {
+         uint C_id ;
+         string name;
+         string Address;
+  }
+
+// mapping is a user define datatype
+mapping (uint =>Platform) Platform_map;
+mapping (uint =>brand) brand_map;
+mapping (uint =>manufacturers) manufacturers_map;
+mapping (uint =>distributor) distributor_map;
+mapping (uint =>retailer) retailer_map;
+mapping (uint=>customer) customer_map;
+
+//insert_laptop_detail is a fanction to insert laptop details.
+function insert_laptop_detail(uint _ModelNo,string memory _Bname,string memory _Bmemory,string memory _Opreatingsystem) public {
+   brand_map[_ModelNo].Model_No = _ModelNo;
+   brand_map[_ModelNo].name = _Bname;
+   brand_map[_ModelNo].Memory = _Bmemory;
+   brand_map[_ModelNo].opratingsystem = _Opreatingsystem;
+}
+  
+//insert_manufacturers_Info is a fanction to insert manufacturer details.
+function insert_manufacturers_Info (  uint _M_id, string memory _Address ,string memory _name)public{
+require(   manufacturers_map[_M_id].M_id != _M_id ,"Already exists"); 
+     manufacturers_map[_M_id].M_id = _M_id;
+     manufacturers_map[_M_id].Address = _Address;
+     manufacturers_map[_M_id].name = _name;
+}
+   
+//insert_distributor_Info is a fanction to insert distributor details.
+function insert_distributor_Info(  uint _D_id ,string memory _name,string memory _Address) public {
+ require(  distributor_map[_D_id].D_id != _D_id ,"Already exists"); 
+     distributor_map[_D_id].D_id= _D_id;
+     distributor_map[_D_id].name= _name;
+     distributor_map[_D_id].Address= _Address;
+ }
+
+ //insert_retailer_Info is a fanction to insert retailer details.
+function insert_retailer_Info( uint _R_id ,string memory _name,string memory _Address)public {
+require( retailer_map[_R_id].R_id != _R_id,"Already exists");
+   retailer_map[_R_id].R_id = _R_id;
+   retailer_map[_R_id].name = _name;
+   retailer_map[_R_id].Address = _Address;
+ }
+  
+//insert_platform_Info is a fanction to insert platform details.
+function insert_platform_Info (uint _id,string memory _brandname,uint _manufacturersId,uint _distributorId,uint _retailerId,uint _costumerId) public {
+require( Platform_map[_id].laptopId != _id,"Already exists");
+       Platform_map[_id].laptopId = _id;
+       Platform_map[_id].brandName = _brandname;
+       Platform_map[_id].manufacturersId = _manufacturersId;
+       Platform_map[_id].distributorId = _distributorId;
+       Platform_map[_id].retailerId = _retailerId;
+       Platform_map[_id].costumerId = _costumerId;
+ }
+
+//insert_customer_Info is a fanction to insert customer details.
+function insert_customer_Info(uint _C_id,string memory _C_name,string memory _Address)public  {
+       customer_map[_C_id].C_id =_C_id;
+       customer_map[_C_id].name =_C_name;
+       customer_map[_C_id].Address =_Address;
+ }
+
+//get_platform_Info is a fanction to read platform details.
+function get_platform_Info(uint _id) view public returns (uint,string memory,uint,uint,uint,uint){
+return    ( Platform_map[_id].laptopId,
+           Platform_map[_id].brandName,
+           Platform_map[_id].manufacturersId,
+           Platform_map[_id].distributorId,
+           Platform_map[_id].retailerId,
+           Platform_map[_id].costumerId  );
+  }
+     
+//  get_retailer_detail is a function to read retailer details.
+ function get_retailer_detail(uint _R_id) view public returns (uint,string memory,string memory){
+ return    (retailer_map[_R_id].R_id,
+            retailer_map[_R_id].name ,
+            retailer_map[_R_id].Address);
+ }
+
+//  get_manufacturers_detail is a function to read manufacturer details.
+function get_manufacturers_detail(uint _M_id) view public returns (uint,string memory,string memory){
+ return   (manufacturers_map[_M_id].M_id ,
+           manufacturers_map[_M_id].Address ,
+           manufacturers_map[_M_id].name);
+ }
+
+ //  get_distributor_detail is a function to read distributor details.
+ function get_distributor_detail(uint _D_id) view public returns (uint,string memory,string memory){
+return  (distributor_map[_D_id].D_id,
+         distributor_map[_D_id].name,
+        distributor_map[_D_id].Address);
+ }
+    
+ //  get_laptop_detail is a function to read laptop details.
+function get_laptop_detail(uint _ModelNo) view public returns (uint,string memory,string memory,string memory){
+ return  ( brand_map[_ModelNo].Model_No,
+           brand_map[_ModelNo].name  ,
+           brand_map[_ModelNo].Memory ,
+           brand_map[_ModelNo].opratingsystem );
+}
+     
+//  get_customer_detail is a function to read customer details.
+function get_customer_detail(uint _C_id) view public returns (uint,string memory,string memory){
+return  ( customer_map[_C_id].C_id ,
+          customer_map[_C_id].name ,
+          customer_map[_C_id].Address);
+ }
+ }
