@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+contract Lottery{
+ address public manager ;
+ address payable [] public  participants;
+
+//The manager is the address of the person who deploys the contract (creates the lottery).
+constructor(){
+   manager =  msg.sender;
+}
+ //Participants enter the lottery by sending at least 1
+ receive () external payable  {
+     require(msg.value == 1 ether);
+     participants.push(payable(msg.sender));
+    
+ }
+ // the get_balance function to view ether balance 
+   function get_balance () public view returns(uint) {
+       require(msg.sender == manager);
+       return address(this).balance;
+   }
+   //The random function generates a pseudo-random number based on block variables.
+     function random_number () public view returns (uint) {
+      return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp , participants.length)));
+     }
+ //The Winner function selects a random winner and transfers the contract's balance to them.
+  function winner() public returns (address){
+      require (msg.sender==manager);
+      require (participants.length>= 10);
+      uint R=random_number();
+      address payable  Towinner;
+      uint index = R%participants.length;
+      Towinner= participants[index];
+      Towinner.transfer(get_balance());
+      return Towinner;
+  }
+    
+}
