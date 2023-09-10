@@ -1,0 +1,101 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+
+contract Crowdfunding {
+// Mapping to keep track of individual contributions by contributors
+    mapping (address=>uint) contributors_map;
+// Address of the manager (creator) of the crowdfunding campaign.
+    address public Manager;
+// Minimum contribution required to participate in the campaign
+    uint public minimum_contribution;
+ // Funding target for the campaign
+    uint public target;
+// Deadline for the campaign.
+    uint public deadline;
+// Total amount raised in the campaign.
+    uint total_amount_rise;
+// Number of contributors in the campaign.
+    uint public No_contributors;
+
+ // Struct to represent a spending request.
+    struct Request {
+        string explanation;
+        address payable recipient;
+        uint value;
+        bool completed;
+        uint No_vote;
+// Mapping to track voters (contributors) for the request.
+        mapping(address=>bool) voters;
+
+
+    }
+ // Mapping to store spending requests.
+    mapping (uint=>Request)request_map;
+ // Number of spending requests.
+    uint public numRequest;
+ // Constructor to initialize campaign parameters.
+    constructor(uint _target,uint _deadline) {
+        Manager=msg.sender;
+        target = _target;
+        deadline = block.timestamp+_deadline;
+        minimum_contribution = 1 ether;
+    }
+ // Function for contributors to contribute ether to the campaign.
+    function contributors_ether ()public payable {
+        require(msg.value>=minimum_contribution,"Minimum ether(1) required");
+        require(block.timestamp<deadline,"Time is over");
+        if (contributors_map[msg.sender]==0){
+            No_contributors;
+            contributors_map[msg.sender]+=msg.value;
+            total_amount_rise+=msg.value;
+        }
+        }
+// Function to check the balance of the smart contract.
+    function balance_smart_contract () public view returns (uint){
+            return address(this).balance;
+    }
+  // Function for contributors to retrieve their funds if the campaign failed.
+       function retrieve_funds ()public   {
+           require(block.timestamp>deadline && total_amount_rise<target, "You are not a participant" );
+           require(contributors_map[msg.sender]>0);
+           address payable user=payable( msg.sender);
+           user.transfer(contributors_map[msg.sender]);
+           contributors_map[msg.sender]=0;
+       }
+ // Modifier to restrict certain functions to the campaign manager (creator).
+       modifier  Only_manager (){
+           require(msg.sender==Manager);
+           _;
+       }
+  // Function to create a spending request.
+       function generate_Request (string memory _explanation,address payable _recipient,uint _value)public Only_manager{ 
+        Request storage newRequest  = request_map[numRequest];
+        numRequest++;
+        newRequest.explanation=_explanation;
+        newRequest.recipient=_recipient;
+        newRequest.value=_value;
+        newRequest.completed=false;
+        newRequest.No_vote=0;
+ }
+     // Function for contributors to vote on a spending request.
+ function voteRequest (uint _requestNo) public{
+     require (contributors_map [msg.sender]>0, "YOu must be contributor");
+      Request storage thisRequest=request_map[_requestNo];
+      require (thisRequest.voters[msg. sender]==false, "You have already voted");
+      thisRequest.voters[msg. sender ]=true;
+      thisRequest.No_vote++;
+ }
+// Function for the manager to make a payment based on a spending request.
+     function makePayment(uint _requestNo) public Only_manager{
+        require(total_amount_rise>=target);
+        Request storage thisRequest=request_map[_requestNo];
+        require(thisRequest.completed==false,"The request has been completed");
+        require(thisRequest.No_vote > No_contributors/2,"Majority does not support");
+        thisRequest.recipient.transfer(thisRequest.value);
+        thisRequest.completed=true;
+    }
+
+
+}
+  
