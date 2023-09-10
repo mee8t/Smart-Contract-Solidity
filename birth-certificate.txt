@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.21;
+
+contract Birth_certificate {
+// Address of the contract owner   
+    address owner;
+// Total number of certificates issued
+    uint256 certificate_count;
+
+// Struct to represent a birth certificate
+    struct Certificate {
+        uint256 certificate_no;
+        string name;
+        string DOB;
+        string Father_name;
+        string Mother_name;
+        string blood_group;
+        string Birth_place;
+       
+    }
+// Mapping to store certificates by certificate number
+    mapping(uint256 => Certificate) Certificate_map;
+ // Mapping to track the existence of certificates by certificate number
+    mapping (uint=>bool) certificate_Exists;
+
+    constructor() {
+        owner = msg.sender;
+        certificate_count = 0;
+    } 
+ // Function to generate a birth certificate
+    function Generate_certificate(uint256 _certificate_no,string memory _name,string memory _DOB,string memory _Father_name,string memory _Mother_name,string memory _blood_group,string memory _Birth_place ) public {
+        require(owner== msg.sender,"Only owner can generate certificates");
+         // Check if the certificate number doesn't already exist
+         require(!certificate_Exists[_certificate_no], "Certificate with the same number already exists");
+        Certificate_map[_certificate_no].certificate_no = _certificate_no;
+        Certificate_map[_certificate_no].name = _name;
+        Certificate_map[_certificate_no].DOB = _DOB;
+        Certificate_map[_certificate_no].Father_name = _Father_name;
+        Certificate_map[_certificate_no].Mother_name =_Mother_name;
+        Certificate_map[_certificate_no].blood_group = _blood_group;
+        Certificate_map[_certificate_no].Birth_place =_Birth_place;
+         // Mark the certificate as existing
+         certificate_Exists[_certificate_no] = true;
+        // Increment the certificate count
+         certificate_count++;
+    }
+
+    // Function to get the details of a birth certificate by certificate number
+    function get_certificate_details (uint _certificate_no) public view returns (uint,string memory,string memory,string memory,string memory,string memory,string memory){
+        return  (Certificate_map[_certificate_no].certificate_no,
+                 Certificate_map[_certificate_no].name,
+                 Certificate_map[_certificate_no].DOB,
+                 Certificate_map[_certificate_no].Father_name,
+                 Certificate_map[_certificate_no].Mother_name,
+                Certificate_map[_certificate_no].blood_group,
+                Certificate_map[_certificate_no].Birth_place );
+    }
+}
