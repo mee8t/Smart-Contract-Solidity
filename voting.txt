@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+contract voting {
+    // Struct to represent a candidate
+            struct candidate {
+                uint candidate_Id;
+                string name ;
+                uint vote_count ;
+            }
+  // Struct to represent a voter
+                struct Voter_Id {
+                uint256 V_ID;
+                string Name;
+                uint256 Age;
+                string DOB;
+                string Address; 
+                bool voted ;
+
+            }
+ 
+  // Mapping to store candidates by candidate ID
+      mapping (uint => candidate) candidate_map;
+     // Mapping to store voters by voter ID
+      mapping  (uint=>Voter_Id) Voter_map;
+      // Mapping to check voter ID can't  be repeat
+      mapping (uint256=>bool) voter_id_Exists;
+      // Mapping to check candidate ID can't  be repeat
+      mapping (uint=>bool) candidate_id_Exists;
+    
+
+    
+    // Function to enroll a voter
+       function Enoll_voter (uint _V_id,string memory _name,uint256 _Age,string memory _DOB, string memory _Address) public {
+         require(!voter_id_Exists[_V_id], "voter with the same number already exists");
+           Voter_map[_V_id].V_ID = _V_id;
+           Voter_map[_V_id].Name = _name;
+           Voter_map[_V_id].Age = _Age;
+           Voter_map[_V_id].DOB = _DOB;
+           Voter_map[_V_id].Address = _Address;
+           Voter_map[_V_id].voted = false;
+            voter_id_Exists[_V_id] = true;
+
+} 
+
+    // Function to enroll a candidate
+       function Enroll_candidate (uint _C_id ,string memory _name) public {
+         require(!candidate_id_Exists[_C_id], "Candidate with the same number already exists");
+           candidate_map[_C_id].candidate_Id =_C_id;
+           candidate_map[_C_id].name =_name;
+            candidate_map[_C_id].vote_count = 0 ;
+            candidate_id_Exists[_C_id] = true;
+
+       }
+
+    // Function to get voter details by voter ID
+       function get_voter(uint _V_id) public view returns (uint ,string memory ,uint256 ,string memory , string memory , bool)  {
+      return ( Voter_map[_V_id].V_ID ,
+           Voter_map[_V_id].Name ,
+           Voter_map[_V_id].Age ,
+           Voter_map[_V_id].DOB,
+           Voter_map[_V_id].Address,
+            Voter_map[_V_id].voted );
+}
+// Function to get candidate details by candidate ID
+      function get_candidate (uint _C_id) public view returns (uint ,string memory, uint) {
+          return ( candidate_map[_C_id].candidate_Id,
+           candidate_map[_C_id].name,
+            candidate_map[_C_id].vote_count );
+      }
+ // Function to allow a voter to vote for a candidate
+   function vote (uint candidate_id, uint _voted) public {
+        candidate_map[candidate_id].vote_count ++;
+         Voter_map[_voted].voted = true ;
+
+   }
+}
