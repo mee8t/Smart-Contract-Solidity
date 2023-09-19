@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract HotelBooking {
+    address public owner;
+    string public hotelName;
+    uint256 public totalRooms;
+    uint256 public roomPrice;
+
+    enum RoomStatus { Vacant, Occupied }
+
+    // Structure to represent a booking
+    struct Room {
+        uint256 roomId;
+        string name;
+        RoomStatus status;
+        address occupant;
+        string checkInDate;
+        string checkOutDate;
+    }
+    // Array to store all bookings we can check by calling index number.
+    Room[] public rooms;
+    // Event emitted when a room is booked
+    event RoomBooked(address indexed guest, uint256 indexed roomId);
+    // Event emitted when a room were checkout.
+    event RoomCheckedOut(address indexed guest, uint256 indexed roomId);
+    // Event emitted when a guest details were inserted 
+   event GuestDetailsInserted(address indexed guest, uint256 indexed roomId, string name , string checkInDate, string checkOutDate);
+   
+    // Constructor to initialize contract parameters
+    constructor(string memory _hotelName, uint256 _totalRooms) {
+        owner = msg.sender;
+        hotelName = _hotelName;
+        totalRooms = _totalRooms;
+        roomPrice = 1 ether;       
+
+
+           // Initialize rooms
+        for (uint256 i = 0; i < _totalRooms; i++) {
+                rooms.push(Room({
+                roomId: i + 1,
+                name : "",
+                status: RoomStatus.Vacant,
+                occupant: address(0),
+                checkInDate: "",
+                checkOutDate: ""
+            }));
+        }
+    }
+
+    // Modifier to check if the caller is the owner
+       modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this action");
+        _;
+    }
+    // Modifier to check how amny room are available.
+       modifier roomAvailable(uint256 roomId) {
+        require(roomId > 0 && roomId <= totalRooms, "Invalid room number");
+        require(rooms[roomId - 1].status == RoomStatus.Vacant, "Room is already occupied");
+        _;
+    }
+    // Modifier to check room is occupied.
+       modifier roomOccupied(uint256 roomId) {
+        require(roomId > 0 && roomId <= totalRooms, "Invalid room number");
+        require(rooms[roomId - 1].status == RoomStatus.Occupied, "Room is not occupied");
+        _;
+    }
+    // Modifier to check if sufficient Ether is sent
+        modifier paidEnough() {
+        require(msg.value >= roomPrice, "Insufficient Ether sent");
+        _;
+    }
+   // roomHasGuestDetails modifier is used to ensure that the room specified for guest details retrieval has valid guest details.
+      modifier roomHasGuestDetails(uint256 roomId) {
+        require(bytes(rooms[roomId - 1].name).length > 0, "Guest details not available for this room");
+        _;
+    }
+    //You can check the total number of rooms with checkTotalRooms
+      function checkTotalRooms() external view returns (uint256 ) {
+        return totalRooms;
+    }
+    //You can check the availability of rooms with checkRoomAvailability 
+      function checkRoomAvailability(uint256 roomId) external view returns (bool) {
+        require(roomId > 0 && roomId <= totalRooms, "Invalid room number");
+        return rooms[roomId - 1].status == RoomStatus.Vacant;
+    }
+    //You can check how many rooms are booked with checkTotalRoomsBooked 
+      function checkTotalRoomsBooked() external view returns (uint256) {
+        uint256 bookedRooms = 0;
+        for (uint256 i = 0; i < totalRooms; i++) {
+            if (rooms[i].status == RoomStatus.Occupied) {
+                bookedRooms++;
+            }
+        }
+        return bookedRooms;
+    }
+    // Function to book a room
+       function bookRoom(uint256 roomId) external payable roomAvailable(roomId) paidEnough {
+        rooms[roomId - 1].status = RoomStatus.Occupied;
+        rooms[roomId - 1].occupant = msg.sender;
+       
+     // Emit a RoomBooked event     
+        emit RoomBooked(msg.sender, roomId);
+    }
+    //The checkout function allows the owner to check out guests and make the room available for others.
+       function checkout(uint256 roomId) external onlyOwner roomOccupied(roomId) {
+        rooms[roomId - 1].status = RoomStatus.Vacant;
+        rooms[roomId - 1].occupant = address(0);
+         // emit a RoomCheckedOut events
+        emit RoomCheckedOut(owner, roomId);
+    }
+
+    //The insertGuestDetails function allows the owner to insert guest details for a specified roomId. This function emits the GuestDetailsInserted event to record the guest's information.
+       function insertGuestDetails(uint256  roomId, string memory _name , string memory _checkInDate, string memory _checkOutDate) external onlyOwner roomOccupied(roomId) {
+        rooms[roomId - 1].name = _name;
+        rooms[roomId - 1].status = RoomStatus.Occupied;
+        rooms[roomId - 1].occupant = msg.sender;
+        rooms[roomId - 1].checkInDate = _checkInDate;
+        rooms[roomId - 1].checkOutDate = _checkOutDate;
+
+    // emit a GuestDetailsInserted event
+       emit GuestDetailsInserted(rooms[roomId - 1].occupant, roomId, _name, _checkInDate,_checkOutDate);
+    }
+
+    //The getGuestDetails function allows anyone to retrieve guest details for a specified room by the room_Id.
+      function getGuestDetails(uint256 roomId) external view roomHasGuestDetails(roomId) returns ( string memory  ,RoomStatus,address , string memory , string memory ) {
+        return (rooms[roomId - 1].name,
+        rooms[roomId - 1].status,
+        rooms[roomId - 1].occupant,
+        rooms[roomId - 1].checkInDate,
+        rooms[roomId - 1].checkOutDate );
+    }
+    // Function for the owner to withdraw contract balance
+       function withdraw() external onlyOwner {
+        payable(owner).transfer(address(this).balance);
+    }
+}
